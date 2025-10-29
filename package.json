@@ -35,9 +35,12 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "strict": true,
-    "credentials": [],
+    "credentials": [
+        "dist/credentials/GithubIssuesApi.credentials.js",
+        "dist/credentials/GithubIssuesOAuth2Api.credentials.js"
+    ],
     "nodes": [
-      "dist/nodes/DynamicSwitch/DynamicSwitch.node.js"
+      "dist/src/nodes/DynamicSwitch/DynamicSwitch.node.js"
     ]
   },
   "devDependencies": {
