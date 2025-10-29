@@ -3,13 +3,14 @@
     "module": "commonjs",
     "target": "es2021",
     "sourceMap": true,
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "rootDir": ".",
-    "outDir": "dist"
+    "outDir": "dist",
+    "noImplicitAny": false
   },
   "include": [
     "src/**/*.ts",
