@@ -4,7 +4,7 @@ This is an n8n community node. It lets you add a Dynamic Switch node to your n8n
   
 [n8n](https://n8n.io/) is a fair-code licensed workflow automation platform.  
   
-[Installation](#installation)  [Operations](#operations)  [Credentials](#credentials)  [Compatibility](#compatibility)  [Usage](#usage)  [Resources](#resources)  [Version history](#version-history)  
+[Installation](#installation)   [Operations](#operations)   [Credentials](#credentials)   [Compatibility](#compatibility)   [Usage](#usage)   [Resources](#resources)
   
 ## Installation  
   
@@ -98,19 +98,6 @@ Example (Expression mode):
 - n8n expressions guide: https://docs.n8n.io/code-examples/expressions/  
 - Source repository (issues and contributions): https://github.com/swiftwing-dev/n8n-nodes-dynamic-switch  
   
-## Version history  
-  
-- 1.0.1  
-  - Fixes
-
-- 1.0.0  
-  - Initial release  
-  - Dynamic outputs (1–50), optional output labels  
-  - Expression and Rules modes  
-  - String, Number, Boolean, Date & Time comparisons  
-  - Case-insensitive string option (non-regex)  
-  - Match Strategy: First or All matches  
-  - Fallback Output support
 
 ## License  
 MIT  
