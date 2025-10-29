@@ -1,49 +1,53 @@
-{  
-  "name": "n8n-nodes-dynamic-switch",  
-  "version": "1.0.0",  
-  "description": "Dynamic Switch — a single-node, multi-output switch for n8n with efficient routing and a custom icon.",  
-  "license": "MIT",  
-  "homepage": "https://github.com/swiftwing-dev/n8n-nodes-dynamic-switch",  
-  "keywords": [  
-    "n8n-community-node-package",  
-    "n8n",  
-    "n8n-node",  
-    "routing",  
-    "switch",  
-    "router",  
-    "dynamic outputs"  
-  ],  
-  "author": {  
-    "name": "SwiftWing",  
-    "email": ""  
-  },  
-  "repository": {  
-    "type": "git",  
-    "url": "https://github.com/swiftwing-dev/n8n-nodes-dynamic-switch.git"  
-  },  
-  "scripts": {  
-    "build": "n8n-node build",  
-    "dev": "n8n-node dev",  
-    "lint": "n8n-node lint",  
-    "lint:fix": "n8n-node lint --fix",  
-    "release": "n8n-node release",  
-    "prepare": "npm run build"  
-  },  
-  "files": ["dist"],  
-  "n8n": {  
-    "n8nNodesApiVersion": 1,  
-    "strict": true,  
-    "credentials": [],  
-    "nodes": ["dist/nodes/DynamicSwitch/DynamicSwitch.node.js"]  
-  },  
-  "devDependencies": {  
-    "@n8n/node-cli": "*",  
-    "eslint": "9.32.0",  
-    "prettier": "3.6.2",  
-    "release-it": "^19.0.4",  
-    "typescript": "5.9.2"  
-  },  
-  "peerDependencies": {  
-    "n8n-workflow": "*"  
-  }  
-}  
+{
+  "name": "n8n-nodes-dynamic-switch",
+  "version": "1.0.0",
+  "description": "Dynamic Switch — a single-node, multi-output switch for n8n with efficient routing and a custom icon.",
+  "license": "MIT",
+  "homepage": "https://github.com/swiftwing-dev/n8n-nodes-dynamic-switch",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "n8n-node",
+    "routing",
+    "switch",
+    "router",
+    "dynamic outputs"
+  ],
+  "author": {
+    "name": "SwiftWing",
+    "email": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swiftwing-dev/n8n-nodes-dynamic-switch.git"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [],
+    "nodes": [
+      "dist/nodes/n8n-nodes-dynamic-switch/DynamicSwitch.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "*",
+    "eslint": "9.32.0",
+    "prettier": "3.6.2",
+    "release-it": "^19.0.4",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
