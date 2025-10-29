@@ -15,16 +15,18 @@ export class DynamicSwitch implements INodeType {
 		inputs: [NodeConnectionType.Main],
 
 		// Render dynamic outputs based on "numberOfOutputs".
-		outputs: `={{Array(Math.max(1, Math.min($parameter.numberOfOutputs ?? 2, 50))).fill('main')}}` as any,
+		// @ts-ignore - Expression string is evaluated by n8n at runtime
+		outputs: `={{Array(Math.max(1, Math.min($parameter.numberOfOutputs ?? 2, 50))).fill('main')}}`,
 
 		// Output port labels (custom labels if provided, otherwise Route 0..N).
+		// @ts-ignore - Expression string is evaluated by n8n at runtime
 		outputNames: `={{(() => {
 			const count = Math.max(1, Math.min($parameter.numberOfOutputs ?? 2, 50));
 			const labelsRaw = ($parameter.outputLabels ?? '').toString();
 			const labels = labelsRaw.split(',').map(s => s.trim()).filter(s => s.length > 0).slice(0, count);
 			if (labels.length === count) return labels;
 			return Array.from({ length: count }, (_, i) => 'Route ' + i);
-		})()}}` as any,
+		})()}}`,
 
 		properties: [
 			{
@@ -353,7 +355,7 @@ export class DynamicSwitch implements INodeType {
 				displayOptions: { show: { mode: ['rules', 'expression'] } },
 			},
 		],
-	} as INodeTypeDescription;
+	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
