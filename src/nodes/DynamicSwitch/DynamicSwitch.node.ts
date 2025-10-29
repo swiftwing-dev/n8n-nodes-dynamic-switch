@@ -15,18 +15,25 @@ export class DynamicSwitch implements INodeType {
 		inputs: [NodeConnectionType.Main],
 
 		// Render dynamic outputs based on "numberOfOutputs".
-		// @ts-ignore - Expression string is evaluated by n8n at runtime
-		outputs: `={{Array(Math.max(1, Math.min($parameter.numberOfOutputs ?? 2, 50))).fill('main')}}`,
+		outputs: (nodeParameters: INodeParameters) => {
+			const count = (nodeParameters.numberOfOutputs as number) ?? 2;
+			const capped = Math.max(1, Math.min(count, 50));
+			return new Array(capped).fill(NodeConnectionType.Main);
+		},
 
 		// Output port labels (custom labels if provided, otherwise Route 0..N).
-		// @ts-ignore - Expression string is evaluated by n8n at runtime
-		outputNames: `={{(() => {
-			const count = Math.max(1, Math.min($parameter.numberOfOutputs ?? 2, 50));
-			const labelsRaw = ($parameter.outputLabels ?? '').toString();
-			const labels = labelsRaw.split(',').map(s => s.trim()).filter(s => s.length > 0).slice(0, count);
-			if (labels.length === count) return labels;
-			return Array.from({ length: count }, (_, i) => 'Route ' + i);
-		})()}}`,
+		outputNames: (nodeParameters: INodeParameters) => {
+			const count = (nodeParameters.numberOfOutputs as number) ?? 2;
+			const capped = Math.max(1, Math.min(count, 50));
+			const labelsRaw = (nodeParameters.outputLabels as string) || '';
+			const labels = labelsRaw
+				.split(',')
+				.map((s) => s.trim())
+				.filter((s) => s.length > 0)
+				.slice(0, capped);
+			if (labels.length === capped) return labels;
+			return Array.from({ length: capped }, (_, i) => `Route ${i}`);
+		},
 
 		properties: [
 			{
