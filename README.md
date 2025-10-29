@@ -100,7 +100,7 @@ Example (Expression mode):
   
 ## Version history  
   
-- 0.1.0  
+- 1.0.0  
   - Initial release  
   - Dynamic outputs (1–50), optional output labels  
   - Expression and Rules modes  
