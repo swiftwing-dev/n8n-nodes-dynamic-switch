@@ -23,23 +23,19 @@
   },  
   "scripts": {  
     "build": "n8n-node build",  
-    "build:watch": "tsc --watch",  
     "dev": "n8n-node dev",  
     "lint": "n8n-node lint",  
     "lint:fix": "n8n-node lint --fix",  
     "release": "n8n-node release",  
-    "prepublishOnly": "n8n-node prerelease"  
+    "prepare": "npm run build"  
+    // Removed: "prepublishOnly": "n8n-node prerelease"  
   },  
-  "files": [  
-    "dist"  
-  ],  
+  "files": ["dist"],  
   "n8n": {  
     "n8nNodesApiVersion": 1,  
     "strict": true,  
     "credentials": [],  
-    "nodes": [  
-      "dist/nodes/DynamicSwitch/DynamicSwitch.node.js"  
-    ]  
+    "nodes": ["dist/nodes/DynamicSwitch/DynamicSwitch.node.js"]  
   },  
   "devDependencies": {  
     "@n8n/node-cli": "*",  
