@@ -107,4 +107,10 @@ Example (Expression mode):
   - String, Number, Boolean, Date & Time comparisons  
   - Case-insensitive string option (non-regex)  
   - Match Strategy: First or All matches  
-  - Fallback Output support  
+  - Fallback Output support
+
+## License  
+MIT  
+
+## Author  
+Built and maintained by Swiftwing (https://swiftwing.fr)  
