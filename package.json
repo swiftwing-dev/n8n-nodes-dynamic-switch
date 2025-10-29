@@ -28,7 +28,6 @@
     "lint:fix": "n8n-node lint --fix",  
     "release": "n8n-node release",  
     "prepare": "npm run build"  
-    // Removed: "prepublishOnly": "n8n-node prerelease"  
   },  
   "files": ["dist"],  
   "n8n": {  
