@@ -1,5 +1,5 @@
 import type { IExecuteFunctions, INodeExecutionData, INodeParameters, INodeType, INodeTypeDescription, NodeParameterValue } from 'n8n-workflow';
-import { NodeOperationError, NodeConnectionType } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 export class DynamicSwitch implements INodeType {
 	description: INodeTypeDescription = {
@@ -12,17 +12,17 @@ export class DynamicSwitch implements INodeType {
 		defaults: {
 			name: 'Dynamic Switch',
 		},
-		inputs: [NodeConnectionType.Main],
+		inputs: ['main'],
 
 		// Render dynamic outputs based on "numberOfOutputs".
-		outputs: (nodeParameters: INodeParameters) => {
+		outputs: ((nodeParameters: INodeParameters): string[] => {
 			const count = (nodeParameters.numberOfOutputs as number) ?? 2;
 			const capped = Math.max(1, Math.min(count, 50));
-			return new Array(capped).fill(NodeConnectionType.Main);
-		},
+			return Array.from({ length: capped }, () => 'main');
+		}) as any,
 
 		// Output port labels (custom labels if provided, otherwise Route 0..N).
-		outputNames: (nodeParameters: INodeParameters) => {
+		outputNames: ((nodeParameters: INodeParameters): string[] => {
 			const count = (nodeParameters.numberOfOutputs as number) ?? 2;
 			const capped = Math.max(1, Math.min(count, 50));
 			const labelsRaw = (nodeParameters.outputLabels as string) || '';
@@ -33,7 +33,7 @@ export class DynamicSwitch implements INodeType {
 				.slice(0, capped);
 			if (labels.length === capped) return labels;
 			return Array.from({ length: capped }, (_, i) => `Route ${i}`);
-		},
+		}) as any,
 
 		properties: [
 			{
@@ -415,11 +415,14 @@ export class DynamicSwitch implements INodeType {
 				if (Number.isFinite(n)) return n;
 			}
 			// Try to parse as Date object (check if it has getTime method)
-			if (v && typeof v === 'object' && 'getTime' in v && typeof (v as any).getTime === 'function') {
-				const n = (v as any).getTime();
-				if (Number.isFinite(n)) return n;
+			if (v !== null && v !== undefined && typeof v === 'object') {
+				const obj = v as Record<string, any>;
+				if ('getTime' in obj && typeof obj.getTime === 'function') {
+					const n = obj.getTime();
+					if (Number.isFinite(n)) return n;
+				}
 			}
-			throw new NodeOperationError(this.getNode(), `Invalid DateTime value: "${v as string}"`);
+			throw new NodeOperationError(this.getNode(), `Invalid DateTime value: "${String(v)}"`);
 		};
 
 		const ensureRange = (idx: number) => {
