@@ -103,4 +103,4 @@ Example (Expression mode):
 MIT  
 
 ## Author  
-Built and maintained by Swiftwing (https://swiftwing.fr)  
+Built and maintained by Swiftwing (https://swiftwing.fr?ref=n8n-nodes-dynamic-switch)  
