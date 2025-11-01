@@ -1,10 +1,11 @@
-import type {  
-	IExecuteFunctions,  
-	INodeExecutionData,  
-	INodeParameters,  
-	INodeType,  
-	INodeTypeDescription,  
-	NodeParameterValue,  
+  
+import type {
+	IExecuteFunctions,
+	INodeExecutionData,
+	INodeParameters,
+	INodeType,
+	INodeTypeDescription,
+	NodeParameterValue,
 } from 'n8n-workflow';  
 import { NodeOperationError } from 'n8n-workflow';  
   
@@ -16,26 +17,25 @@ export class DynamicSwitch implements INodeType {
 		version: 1,  
 		icon: 'file:dynamic-switch.svg',  
 		description:  
-			'Single-node switch with dynamic outputs and efficient routing: maintained by https://Swiftwing.fr',  
-		defaults: {  
-			name: 'Dynamic Switch',  
-		},  
+			'Single-node switch with dynamic outputs and efficient routing: maintained by Swiftwing.fr',  
+		defaults: { name: 'Dynamic Switch' },  
   
-		// Inputs/Outputs  
 		inputs: ['main'],  
   
 		// Render dynamic outputs based on "numberOfOutputs".  
-		outputs: ((nodeParameters: INodeParameters) => {  
-			const count = (nodeParameters.numberOfOutputs as number) ?? 2;  
-			const capped = Math.max(1, Math.min(count, 50));  
+		// IMPORTANT: Guard against undefined nodeParameters to avoid UI crashes on initial render.  
+		outputs: ((nodeParameters?: INodeParameters) => {  
+			const rawCount = Number((nodeParameters as any)?.numberOfOutputs ?? 2);  
+			const capped = Math.max(1, Math.min(rawCount, 50));  
 			return Array.from({ length: capped }, () => 'main');  
 		}) as any,  
   
 		// Output port labels (custom labels if provided, otherwise Route 0..N).  
-		outputNames: ((nodeParameters: INodeParameters) => {  
-			const count = (nodeParameters.numberOfOutputs as number) ?? 2;  
-			const capped = Math.max(1, Math.min(count, 50));  
-			const labelsRaw = (nodeParameters.outputLabels as string) || '';  
+		// IMPORTANT: Also guard against undefined nodeParameters.  
+		outputNames: ((nodeParameters?: INodeParameters) => {  
+			const rawCount = Number((nodeParameters as any)?.numberOfOutputs ?? 2);  
+			const capped = Math.max(1, Math.min(rawCount, 50));  
+			const labelsRaw = ((nodeParameters as any)?.outputLabels as string) || '';  
 			const labels = labelsRaw  
 				.split(',')  
 				.map((s) => s.trim())  
@@ -144,8 +144,8 @@ export class DynamicSwitch implements INodeType {
 			},  
 			{  
 				displayName: 'Routing Rules',  
-				name: 'rulesCollectionBoolean',  
-				placeholder: 'Add Rule',  
+				name: 'rules',  
+				placeholder: 'Add Routing Rule',  
 				type: 'fixedCollection',  
 				typeOptions: { multipleValues: true },  
 				displayOptions: { show: { dataType: ['boolean'], mode: ['rules'] } },  
@@ -197,8 +197,8 @@ export class DynamicSwitch implements INodeType {
 			},  
 			{  
 				displayName: 'Routing Rules',  
-				name: 'rulesCollectionDateTime',  
-				placeholder: 'Add Rule',  
+				name: 'rules',  
+				placeholder: 'Add Routing Rule',  
 				type: 'fixedCollection',  
 				typeOptions: { multipleValues: true },  
 				displayOptions: { show: { dataType: ['dateTime'], mode: ['rules'] } },  
@@ -248,8 +248,8 @@ export class DynamicSwitch implements INodeType {
 			},  
 			{  
 				displayName: 'Routing Rules',  
-				name: 'rulesCollectionNumber',  
-				placeholder: 'Add Rule',  
+				name: 'rules',  
+				placeholder: 'Add Routing Rule',  
 				type: 'fixedCollection',  
 				typeOptions: { multipleValues: true },  
 				displayOptions: { show: { dataType: ['number'], mode: ['rules'] } },  
@@ -311,8 +311,8 @@ export class DynamicSwitch implements INodeType {
 			},  
 			{  
 				displayName: 'Routing Rules',  
-				name: 'rulesCollectionString',  
-				placeholder: 'Add Rule',  
+				name: 'rules',  
+				placeholder: 'Add Routing Rule',  
 				type: 'fixedCollection',  
 				typeOptions: { multipleValues: true },  
 				displayOptions: { show: { dataType: ['string'], mode: ['rules'] } },  
@@ -410,9 +410,7 @@ export class DynamicSwitch implements INodeType {
 			startsWith: (v1, v2) => (v1 as string).startsWith(v2 as string),  
 			notStartsWith: (v1, v2) => !(v1 as string).startsWith(v2 as string),  
 			regex: (v1, v2) => {  
-				const match = (v2 ?? '')  
-					.toString()  
-					.match(new RegExp('^/(.*?)/([gimusy]*)$'));  
+				const match = (v2 ?? '').toString().match(new RegExp('^/(.*?)/([gimusy]*)$'));  
 				let regex: RegExp;  
 				if (!match) regex = new RegExp((v2 ?? '').toString());  
 				else if (match.length === 1) regex = new RegExp(match[1]);  
@@ -420,9 +418,7 @@ export class DynamicSwitch implements INodeType {
 				return !!(v1 ?? '').toString().match(regex);  
 			},  
 			notRegex: (v1, v2) => {  
-				const match = (v2 ?? '')  
-					.toString()  
-					.match(new RegExp('^/(.*?)/([gimusy]*)$'));  
+				const match = (v2 ?? '').toString().match(new RegExp('^/(.*?)/([gimusy]*)$'));  
 				let regex: RegExp;  
 				if (!match) regex = new RegExp((v2 ?? '').toString());  
 				else if (match.length === 1) regex = new RegExp(match[1]);  
@@ -437,7 +433,6 @@ export class DynamicSwitch implements INodeType {
 				const n = new Date(v).getTime();  
 				if (Number.isFinite(n)) return n;  
 			}  
-			// Try to parse as Date object (check if it has getTime method)  
 			if (v !== null && v !== undefined && typeof v === 'object') {  
 				const obj = v as Record<string, any>;  
 				if ('getTime' in obj && typeof obj.getTime === 'function') {  
@@ -457,13 +452,6 @@ export class DynamicSwitch implements INodeType {
 			}  
 		};  
   
-		const rulesPathByType: Record<string, string> = {  
-			boolean: 'rulesCollectionBoolean.rules',  
-			dateTime: 'rulesCollectionDateTime.rules',  
-			number: 'rulesCollectionNumber.rules',  
-			string: 'rulesCollectionString.rules',  
-		};  
-  
 		for (let i = 0; i < items.length; i++) {  
 			const item = items[i];  
   
@@ -475,8 +463,9 @@ export class DynamicSwitch implements INodeType {
 					if (target < 0 || target >= outputs.length) {  
 						const fb = this.getNodeParameter('fallbackOutput', i) as number;  
 						if (fb !== -1) {  
-							ensureRange(Math.floor(fb));  
-							outputs[Math.floor(fb)].push(item);  
+							const outIdx = Math.floor(fb);  
+							ensureRange(outIdx);  
+							outputs[outIdx].push(item);  
 						}  
 					} else {  
 						ensureRange(target);  
@@ -491,20 +480,20 @@ export class DynamicSwitch implements INodeType {
 					(this.getNodeParameter('matchStrategy', i) as string) || 'first';  
   
 				let left: NodeParameterValue = this.getNodeParameter('value1', i) as NodeParameterValue;  
-  
 				if (dataType === 'dateTime') {  
 					left = parseDateValue(left);  
 				}  
   
-				const rulesPath = rulesPathByType[dataType] || rulesPathByType.number;  
-				const rules = this.getNodeParameter(rulesPath, i, []) as INodeParameters[];  
+				// "rules" is defined multiple times with displayOptions per dataType,  
+				// like in the Switch9000 example. This lookup will pick the active one.  
+				const rules = this.getNodeParameter('rules.rules', i, []) as INodeParameters[];  
   
 				let matched = false;  
   
 				for (const rule of rules) {  
 					const op = rule.operation as string;  
   
-					// Use 'pattern' field for regex operations, 'value2' for everything else  
+					// For regex operations on strings, read 'pattern', else read 'value2'  
 					let right: NodeParameterValue;  
 					if (dataType === 'string' && (op === 'regex' || op === 'notRegex')) {  
 						right = (rule as any).pattern as NodeParameterValue;  
