@@ -1,4 +1,3 @@
-  
 import type {
 	IExecuteFunctions,
 	INodeExecutionData,
@@ -6,7 +5,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 	NodeParameterValue,
-} from 'n8n-workflow';  
+} from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';  
   
 export class DynamicSwitch implements INodeType {  
@@ -20,18 +19,17 @@ export class DynamicSwitch implements INodeType {
 			'Single-node switch with dynamic outputs and efficient routing: maintained by Swiftwing.fr',  
 		defaults: { name: 'Dynamic Switch' },  
   
-		inputs: ['main'],  
-  
-		// Render dynamic outputs based on "numberOfOutputs".  
-		// IMPORTANT: Guard against undefined nodeParameters to avoid UI crashes on initial render.  
-		outputs: ((nodeParameters?: INodeParameters) => {  
-			const rawCount = Number((nodeParameters as any)?.numberOfOutputs ?? 2);  
-			const capped = Math.max(1, Math.min(rawCount, 50));  
-			return Array.from({ length: capped }, () => 'main');  
+		// Inputs
+		inputs: ['main'],
+
+		// Dynamic outputs based on numberOfOutputs (guarded for initial render)
+		outputs: ((nodeParameters?: INodeParameters) => {
+			const rawCount = Number((nodeParameters as any)?.numberOfOutputs ?? 2);
+			const capped = Math.max(1, Math.min(rawCount, 50));
+			return Array.from({ length: capped }, () => 'main');
 		}) as any,  
   
-		// Output port labels (custom labels if provided, otherwise Route 0..N).  
-		// IMPORTANT: Also guard against undefined nodeParameters.  
+		// Output port labels  
 		outputNames: ((nodeParameters?: INodeParameters) => {  
 			const rawCount = Number((nodeParameters as any)?.numberOfOutputs ?? 2);  
 			const capped = Math.max(1, Math.min(rawCount, 50));  
@@ -126,10 +124,10 @@ export class DynamicSwitch implements INodeType {
 					{ name: 'First Match', value: 'first' },  
 					{ name: 'All Matches', value: 'all' },  
 				],  
+				displayOptions: { show: { mode: ['rules'] } },  
 				default: 'first',  
 				description:  
 					'Whether to send to the first matching rule or to all matching rules.',  
-				displayOptions: { show: { mode: ['rules'] } },  
 			},  
   
 			// -----------------------------  
@@ -144,7 +142,7 @@ export class DynamicSwitch implements INodeType {
 			},  
 			{  
 				displayName: 'Routing Rules',  
-				name: 'rules',  
+				name: 'rulesBoolean',  
 				placeholder: 'Add Routing Rule',  
 				type: 'fixedCollection',  
 				typeOptions: { multipleValues: true },  
@@ -197,7 +195,7 @@ export class DynamicSwitch implements INodeType {
 			},  
 			{  
 				displayName: 'Routing Rules',  
-				name: 'rules',  
+				name: 'rulesDateTime',  
 				placeholder: 'Add Routing Rule',  
 				type: 'fixedCollection',  
 				typeOptions: { multipleValues: true },  
@@ -248,7 +246,7 @@ export class DynamicSwitch implements INodeType {
 			},  
 			{  
 				displayName: 'Routing Rules',  
-				name: 'rules',  
+				name: 'rulesNumber',  
 				placeholder: 'Add Routing Rule',  
 				type: 'fixedCollection',  
 				typeOptions: { multipleValues: true },  
@@ -311,7 +309,7 @@ export class DynamicSwitch implements INodeType {
 			},  
 			{  
 				displayName: 'Routing Rules',  
-				name: 'rules',  
+				name: 'rulesString',  
 				placeholder: 'Add Routing Rule',  
 				type: 'fixedCollection',  
 				typeOptions: { multipleValues: true },  
@@ -344,16 +342,18 @@ export class DynamicSwitch implements INodeType {
 								displayName: 'Right Value',  
 								name: 'value2',  
 								type: 'string',  
-								displayOptions: { hide: { operation: ['regex', 'notRegex'] } },  
 								default: '',  
+								description:  
+									'For non-regex operations. This field is ignored if operation is Regex.',  
 							},  
 							{  
-								displayName: 'Regex',  
+								displayName: 'Regex Pattern',  
 								name: 'pattern',  
 								type: 'string',  
-								displayOptions: { show: { operation: ['regex', 'notRegex'] } },  
 								default: '',  
 								placeholder: '/text/i',  
+								description:  
+									'For Regex operations. Use format /pattern/flags, e.g. /text/i.',  
 							},  
 							{  
 								displayName: 'Output',  
@@ -484,16 +484,21 @@ export class DynamicSwitch implements INodeType {
 					left = parseDateValue(left);  
 				}  
   
-				// "rules" is defined multiple times with displayOptions per dataType,  
-				// like in the Switch9000 example. This lookup will pick the active one.  
-				const rules = this.getNodeParameter('rules.rules', i, []) as INodeParameters[];  
+				// Pick the correct rules collection for the selected data type  
+				const rulesPathByType: Record<string, string> = {  
+					boolean: 'rulesBoolean.rules',  
+					dateTime: 'rulesDateTime.rules',  
+					number: 'rulesNumber.rules',  
+					string: 'rulesString.rules',  
+				};  
+				const rulesPath = rulesPathByType[dataType] || rulesPathByType.number;  
+				const rules = this.getNodeParameter(rulesPath, i, []) as INodeParameters[];  
   
 				let matched = false;  
   
 				for (const rule of rules) {  
 					const op = rule.operation as string;  
   
-					// For regex operations on strings, read 'pattern', else read 'value2'  
 					let right: NodeParameterValue;  
 					if (dataType === 'string' && (op === 'regex' || op === 'notRegex')) {  
 						right = (rule as any).pattern as NodeParameterValue;  
@@ -505,7 +510,7 @@ export class DynamicSwitch implements INodeType {
 						right = parseDateValue(right);  
 					}  
   
-					// Normalize for case-insensitive string comparisons (except regex).  
+					// Case-insensitive string comparisons (except regex)  
 					let l = left;  
 					let r = right;  
 					if (dataType === 'string') {  
