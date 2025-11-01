@@ -1,5 +1,5 @@
 import type { IExecuteFunctions, INodeExecutionData, INodeParameters, INodeType, INodeTypeDescription, NodeParameterValue } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError, NodeConnectionTypes } from 'n8n-workflow';
 
 export class DynamicSwitch implements INodeType {
 	description: INodeTypeDescription = {
@@ -12,13 +12,13 @@ export class DynamicSwitch implements INodeType {
 		defaults: {
 			name: 'Dynamic Switch',
 		},
-		inputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
 
 		// Render dynamic outputs based on "numberOfOutputs".
 		outputs: ((nodeParameters: INodeParameters) => {
 			const count = (nodeParameters.numberOfOutputs as number) ?? 2;
 			const capped = Math.max(1, Math.min(count, 50));
-			return Array.from({ length: capped }, () => 'main');
+			return Array.from({ length: capped }, () => NodeConnectionTypes.Main);
 		}) as any,
 
 		// Output port labels (custom labels if provided, otherwise Route 0..N).
