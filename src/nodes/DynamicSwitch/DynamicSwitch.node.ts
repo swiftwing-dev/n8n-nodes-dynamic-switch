@@ -1,5 +1,5 @@
 import type { IExecuteFunctions, INodeExecutionData, INodeParameters, INodeType, INodeTypeDescription, NodeParameterValue } from 'n8n-workflow';
-import { NodeOperationError, NodeConnectionTypes } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 export class DynamicSwitch implements INodeType {
 	description: INodeTypeDescription = {
@@ -12,13 +12,13 @@ export class DynamicSwitch implements INodeType {
 		defaults: {
 			name: 'Dynamic Switch',
 		},
-		inputs: [NodeConnectionTypes.Main],
+		inputs: ['main'],
 
 		// Render dynamic outputs based on "numberOfOutputs".
 		outputs: ((nodeParameters: INodeParameters) => {
 			const count = (nodeParameters.numberOfOutputs as number) ?? 2;
 			const capped = Math.max(1, Math.min(count, 50));
-			return Array.from({ length: capped }, () => NodeConnectionTypes.Main);
+			return Array.from({ length: capped }, () => 'main');
 		}) as any,
 
 		// Output port labels (custom labels if provided, otherwise Route 0..N).
@@ -332,7 +332,7 @@ export class DynamicSwitch implements INodeType {
 							},
 							{
 								displayName: 'Regex',
-								name: 'value2',
+								name: 'pattern',
 								type: 'string',
 								displayOptions: { show: { operation: ['regex', 'notRegex'] } },
 								default: '',
@@ -469,7 +469,16 @@ export class DynamicSwitch implements INodeType {
 				let matched = false;
 
 				for (const rule of rules) {
-					let right: NodeParameterValue = rule.value2 as NodeParameterValue;
+					const op = rule.operation as string;
+
+					// Use 'pattern' field for regex operations, 'value2' for everything else
+					let right: NodeParameterValue;
+					if (dataType === 'string' && (op === 'regex' || op === 'notRegex')) {
+						right = rule.pattern as NodeParameterValue;
+					} else {
+						right = rule.value2 as NodeParameterValue;
+					}
+
 					if (dataType === 'dateTime') {
 						right = parseDateValue(right);
 					}
@@ -477,7 +486,6 @@ export class DynamicSwitch implements INodeType {
 					// Normalize for case-insensitive string comparisons (except regex).
 					let l = left;
 					let r = right;
-					const op = rule.operation as string;
 					if (dataType === 'string') {
 						const ci = this.getNodeParameter('caseInsensitive', i, true) as boolean;
 						const isRegex = op === 'regex' || op === 'notRegex';
