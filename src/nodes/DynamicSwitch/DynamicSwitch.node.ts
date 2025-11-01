@@ -15,14 +15,14 @@ export class DynamicSwitch implements INodeType {
 		inputs: ['main'],
 
 		// Render dynamic outputs based on "numberOfOutputs".
-		outputs: ((nodeParameters: INodeParameters): string[] => {
+		outputs: ((nodeParameters: INodeParameters) => {
 			const count = (nodeParameters.numberOfOutputs as number) ?? 2;
 			const capped = Math.max(1, Math.min(count, 50));
 			return Array.from({ length: capped }, () => 'main');
 		}) as any,
 
 		// Output port labels (custom labels if provided, otherwise Route 0..N).
-		outputNames: ((nodeParameters: INodeParameters): string[] => {
+		outputNames: ((nodeParameters: INodeParameters) => {
 			const count = (nodeParameters.numberOfOutputs as number) ?? 2;
 			const capped = Math.max(1, Math.min(count, 50));
 			const labelsRaw = (nodeParameters.outputLabels as string) || '';
