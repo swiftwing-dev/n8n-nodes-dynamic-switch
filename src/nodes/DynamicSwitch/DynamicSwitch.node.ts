@@ -135,7 +135,7 @@ export class DynamicSwitch implements INodeType {
 			// -----------------------------  
 			{  
 				displayName: 'Left Value',  
-				name: 'value1',  
+				name: 'value1Boolean',
 				type: 'boolean',  
 				displayOptions: { show: { dataType: ['boolean'], mode: ['rules'] } },  
 				default: false,  
@@ -188,7 +188,7 @@ export class DynamicSwitch implements INodeType {
 			// -----------------------------  
 			{  
 				displayName: 'Left Value',  
-				name: 'value1',  
+				name: 'value1DateTime',
 				type: 'dateTime',  
 				displayOptions: { show: { dataType: ['dateTime'], mode: ['rules'] } },  
 				default: '',  
@@ -239,7 +239,7 @@ export class DynamicSwitch implements INodeType {
 			// -----------------------------  
 			{  
 				displayName: 'Left Value',  
-				name: 'value1',  
+				name: 'value1Number',
 				type: 'number',  
 				displayOptions: { show: { dataType: ['number'], mode: ['rules'] } },  
 				default: 0,  
@@ -294,7 +294,7 @@ export class DynamicSwitch implements INodeType {
 			// -----------------------------  
 			{  
 				displayName: 'Left Value',  
-				name: 'value1',  
+				name: 'value1String',
 				type: 'string',  
 				displayOptions: { show: { dataType: ['string'], mode: ['rules'] } },  
 				default: '',  
@@ -479,10 +479,17 @@ export class DynamicSwitch implements INodeType {
 				const matchStrategy =  
 					(this.getNodeParameter('matchStrategy', i) as string) || 'first';  
   
-				let left: NodeParameterValue = this.getNodeParameter('value1', i) as NodeParameterValue;  
-				if (dataType === 'dateTime') {  
+								let left: NodeParameterValue;  
+				if (dataType === 'boolean') {  
+					left = this.getNodeParameter('value1Boolean', i) as NodeParameterValue;  
+				} else if (dataType === 'dateTime') {  
+					left = this.getNodeParameter('value1DateTime', i) as NodeParameterValue;  
 					left = parseDateValue(left);  
-				}  
+				} else if (dataType === 'number') {  
+					left = this.getNodeParameter('value1Number', i) as NodeParameterValue;  
+				} else {  
+					left = this.getNodeParameter('value1String', i) as NodeParameterValue;  
+				}    
   
 				// Pick the correct rules collection for the selected data type  
 				const rulesPathByType: Record<string, string> = {  
