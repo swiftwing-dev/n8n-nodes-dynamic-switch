@@ -21,18 +21,9 @@ export class DynamicSwitch implements INodeType {
   
 		inputs: ['main'],  
   
-		// IMPORTANT:  
-		// outputs and outputNames must NOT be functions; they must be serializable.  
-		// We use an expression that returns an array of node outputs with display names.  
-		// Supports up to 50 outputs.  
+		// IMPORTANT: Use a single literal string so TS can match the `={{${string}}}` type.  
 		outputs:  
-			'={{ ( () => { ' +  
-			'  const raw = Number($parameter.numberOfOutputs) || 2; ' +  
-			'  const count = Math.max(1, Math.min(raw, 50)); ' +  
-			'  const labelsRaw = ($parameter.outputLabels || ""); ' +  
-			'  const parts = labelsRaw.split(",").map(s => s.trim()).filter(Boolean); ' +  
-			'  return Array.from({ length: count }, (_, i) => ({ type: "main", displayName: parts[i] || `Route ${i}` })); ' +  
-			'})() }}',  
+			'={{(() => { const raw = Number($parameter["numberOfOutputs"]) || 2; const count = Math.max(1, Math.min(raw, 50)); const labelsRaw = ($parameter["outputLabels"] || ""); const parts = labelsRaw.split(",").map(s => s.trim()).filter(Boolean); return Array.from({ length: count }, (_, i) => ({ type: "main", displayName: parts[i] || "Route " + i })); })() }}' as `={{${string}}}`,  
   
 		properties: [  
 			{  
@@ -50,8 +41,7 @@ export class DynamicSwitch implements INodeType {
 				type: 'string',  
 				default: '',  
 				placeholder: 'Comma-separated, e.g. "Cold, Warm, Hot"',  
-				description:  
-					'Optional custom labels for each output (comma-separated).',  
+				description: 'Optional custom labels for each output (comma-separated).',  
 			},  
 			{  
 				displayName: 'Mode',  
@@ -61,19 +51,16 @@ export class DynamicSwitch implements INodeType {
 					{  
 						name: 'Expression',  
 						value: 'expression',  
-						description:  
-							'Send item to the output index resolved by an expression',  
+						description: 'Send item to the output index resolved by an expression',  
 					},  
 					{  
 						name: 'Rules',  
 						value: 'rules',  
-						description:  
-							'Send item to the output(s) whose rule(s) match',  
+						description: 'Send item to the output(s) whose rule(s) match',  
 					},  
 				],  
 				default: 'rules',  
-				description:  
-					'How to determine the target output for each incoming item.',  
+				description: 'How to determine the target output for each incoming item.',  
 			},  
   
 			// Mode: Expression  
@@ -88,7 +75,7 @@ export class DynamicSwitch implements INodeType {
 					'Zero-based output index to send each item to. Expressions are supported, e.g. {{$json.routeIndex}}.',  
 			},  
   
-			// Mode: Rules — shared controls  
+			// Mode: Rules — Shared controls  
 			{  
 				displayName: 'Data Type',  
 				name: 'dataType',  
@@ -160,8 +147,7 @@ export class DynamicSwitch implements INodeType {
 								type: 'number',  
 								typeOptions: { minValue: 0 },  
 								default: 0,  
-								description:  
-									'Index of the output to send matching items to.',  
+								description: 'Index of the output to send matching items to.',  
 							},  
 						],  
 					},  
@@ -325,9 +311,7 @@ export class DynamicSwitch implements INodeType {
 								description:  
 									'For non-regex operations. This field is ignored if operation is Regex.',  
 								displayOptions: {  
-									hide: {  
-										operation: ['regex', 'notRegex'],  
-									},  
+									hide: { operation: ['regex', 'notRegex'] },  
 								},  
 							},  
 							{  
@@ -339,9 +323,7 @@ export class DynamicSwitch implements INodeType {
 								description:  
 									'For Regex operations. Use format /pattern/flags, e.g. /text/i.',  
 								displayOptions: {  
-									show: {  
-										operation: ['regex', 'notRegex'],  
-									},  
+									show: { operation: ['regex', 'notRegex'] },  
 								},  
 							},  
 							{  
@@ -562,7 +544,6 @@ export class DynamicSwitch implements INodeType {
 				}  
 			} catch (error) {  
 				if (this.continueOnFail()) {  
-					// route error to first output (if any)  
 					if (!outputs.length) return [[]];  
 					outputs[0].push({  
 						json: { error: (error as Error).message },  
