@@ -13,7 +13,6 @@
     "noImplicitAny": false
   },
   "include": [
-    "src/**/*.ts",
-    "credentials/**/*.ts"
+    "nodes/**/*.ts"
   ]
 }

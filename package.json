@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-dynamic-switch",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "Dynamic Switch — a single-node, multi-output switch for n8n with efficient routing and a custom icon.",
   "license": "MIT",
   "homepage": "https://github.com/swiftwing-dev/n8n-nodes-dynamic-switch",
@@ -36,7 +36,7 @@
     "n8nNodesApiVersion": 1,
     "strict": true,
     "nodes": [
-      "dist/src/nodes/DynamicSwitch/DynamicSwitch.node.js"
+      "dist/nodes/DynamicSwitch/DynamicSwitch.node.js"
     ]
   },
   "devDependencies": {

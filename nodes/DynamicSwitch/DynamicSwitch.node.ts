@@ -1,47 +1,38 @@
-import type {
-	IExecuteFunctions,
-	INodeExecutionData,
-	INodeParameters,
-	INodeType,
-	INodeTypeDescription,
-	NodeParameterValue,
-} from 'n8n-workflow';
+import type {  
+	IExecuteFunctions,  
+	INodeExecutionData,  
+	INodeParameters,  
+	INodeType,  
+	INodeTypeDescription,  
+	NodeParameterValue,  
+} from 'n8n-workflow';  
 import { NodeOperationError } from 'n8n-workflow';  
   
 export class DynamicSwitch implements INodeType {  
 	description: INodeTypeDescription = {  
 		displayName: 'Dynamic Switch',  
-		name: 'multiRouteSwitch',  
+		name: 'dynamicSwitch',  
 		group: ['transform'],  
 		version: 1,  
-		icon: 'file:dynamic-switch.svg',  
+		icon: 'file:dynamic-switch-lofi.svg',  
 		description:  
 			'Single-node switch with dynamic outputs and efficient routing: maintained by Swiftwing.fr',  
 		defaults: { name: 'Dynamic Switch' },  
   
-		// Inputs
-		inputs: ['main'],
-
-		// Dynamic outputs based on numberOfOutputs (guarded for initial render)
-		outputs: ((nodeParameters?: INodeParameters) => {
-			const rawCount = Number((nodeParameters as any)?.numberOfOutputs ?? 2);
-			const capped = Math.max(1, Math.min(rawCount, 50));
-			return Array.from({ length: capped }, () => 'main');
-		}) as any,  
+		inputs: ['main'],  
   
-		// Output port labels  
-		outputNames: ((nodeParameters?: INodeParameters) => {  
-			const rawCount = Number((nodeParameters as any)?.numberOfOutputs ?? 2);  
-			const capped = Math.max(1, Math.min(rawCount, 50));  
-			const labelsRaw = ((nodeParameters as any)?.outputLabels as string) || '';  
-			const labels = labelsRaw  
-				.split(',')  
-				.map((s) => s.trim())  
-				.filter((s) => s.length > 0)  
-				.slice(0, capped);  
-			if (labels.length === capped) return labels;  
-			return Array.from({ length: capped }, (_, i) => `Route ${i}`);  
-		}) as any,  
+		// IMPORTANT:  
+		// outputs and outputNames must NOT be functions; they must be serializable.  
+		// We use an expression that returns an array of node outputs with display names.  
+		// Supports up to 50 outputs.  
+		outputs:  
+			'={{ ( () => { ' +  
+			'  const raw = Number($parameter.numberOfOutputs) || 2; ' +  
+			'  const count = Math.max(1, Math.min(raw, 50)); ' +  
+			'  const labelsRaw = ($parameter.outputLabels || ""); ' +  
+			'  const parts = labelsRaw.split(",").map(s => s.trim()).filter(Boolean); ' +  
+			'  return Array.from({ length: count }, (_, i) => ({ type: "main", displayName: parts[i] || `Route ${i}` })); ' +  
+			'})() }}',  
   
 		properties: [  
 			{  
@@ -85,9 +76,7 @@ export class DynamicSwitch implements INodeType {
 					'How to determine the target output for each incoming item.',  
 			},  
   
-			// -----------------------------  
 			// Mode: Expression  
-			// -----------------------------  
 			{  
 				displayName: 'Output Index',  
 				name: 'expressionOutput',  
@@ -96,12 +85,10 @@ export class DynamicSwitch implements INodeType {
 				displayOptions: { show: { mode: ['expression'] } },  
 				default: 0,  
 				description:  
-					'Zero-based output index to send each item to. Expressions are supported, e.g. {{$json.priority}}.',  
+					'Zero-based output index to send each item to. Expressions are supported, e.g. {{$json.routeIndex}}.',  
 			},  
   
-			// -----------------------------  
-			// Mode: Rules — Shared controls  
-			// -----------------------------  
+			// Mode: Rules — shared controls  
 			{  
 				displayName: 'Data Type',  
 				name: 'dataType',  
@@ -130,12 +117,10 @@ export class DynamicSwitch implements INodeType {
 					'Whether to send to the first matching rule or to all matching rules.',  
 			},  
   
-			// -----------------------------  
 			// Data type: boolean  
-			// -----------------------------  
 			{  
 				displayName: 'Left Value',  
-				name: 'value1Boolean',
+				name: 'value1Boolean',  
 				type: 'boolean',  
 				displayOptions: { show: { dataType: ['boolean'], mode: ['rules'] } },  
 				default: false,  
@@ -183,12 +168,10 @@ export class DynamicSwitch implements INodeType {
 				],  
 			},  
   
-			// -----------------------------  
 			// Data type: dateTime  
-			// -----------------------------  
 			{  
 				displayName: 'Left Value',  
-				name: 'value1DateTime',
+				name: 'value1DateTime',  
 				type: 'dateTime',  
 				displayOptions: { show: { dataType: ['dateTime'], mode: ['rules'] } },  
 				default: '',  
@@ -234,12 +217,10 @@ export class DynamicSwitch implements INodeType {
 				],  
 			},  
   
-			// -----------------------------  
 			// Data type: number  
-			// -----------------------------  
 			{  
 				displayName: 'Left Value',  
-				name: 'value1Number',
+				name: 'value1Number',  
 				type: 'number',  
 				displayOptions: { show: { dataType: ['number'], mode: ['rules'] } },  
 				default: 0,  
@@ -289,12 +270,10 @@ export class DynamicSwitch implements INodeType {
 				],  
 			},  
   
-			// -----------------------------  
 			// Data type: string  
-			// -----------------------------  
 			{  
 				displayName: 'Left Value',  
-				name: 'value1String',
+				name: 'value1String',  
 				type: 'string',  
 				displayOptions: { show: { dataType: ['string'], mode: ['rules'] } },  
 				default: '',  
@@ -345,6 +324,11 @@ export class DynamicSwitch implements INodeType {
 								default: '',  
 								description:  
 									'For non-regex operations. This field is ignored if operation is Regex.',  
+								displayOptions: {  
+									hide: {  
+										operation: ['regex', 'notRegex'],  
+									},  
+								},  
 							},  
 							{  
 								displayName: 'Regex Pattern',  
@@ -354,6 +338,11 @@ export class DynamicSwitch implements INodeType {
 								placeholder: '/text/i',  
 								description:  
 									'For Regex operations. Use format /pattern/flags, e.g. /text/i.',  
+								displayOptions: {  
+									show: {  
+										operation: ['regex', 'notRegex'],  
+									},  
+								},  
 							},  
 							{  
 								displayName: 'Output',  
@@ -384,9 +373,7 @@ export class DynamicSwitch implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {  
 		const items = this.getInputData();  
   
-		const numberOfOutputs =  
-			(this.getNodeParameter('numberOfOutputs', 0) as number) ?? 2;  
-  
+		const numberOfOutputs = (this.getNodeParameter('numberOfOutputs', 0) as number) ?? 2;  
 		const outputs: INodeExecutionData[][] = Array.from(  
 			{ length: Math.max(1, Math.min(numberOfOutputs, 50)) },  
 			() => [],  
@@ -394,35 +381,54 @@ export class DynamicSwitch implements INodeType {
   
 		const mode = this.getNodeParameter('mode', 0) as string;  
   
+		// Compare operations  
 		const ops: Record<string, (v1: NodeParameterValue, v2: NodeParameterValue) => boolean> = {  
 			after: (v1, v2) => (v1 as number) > (v2 as number),  
 			before: (v1, v2) => (v1 as number) < (v2 as number),  
+  
 			contains: (v1, v2) => (v1 ?? '').toString().includes((v2 ?? '').toString()),  
 			notContains: (v1, v2) => !(v1 ?? '').toString().includes((v2 ?? '').toString()),  
+  
 			endsWith: (v1, v2) => (v1 as string).endsWith(v2 as string),  
 			notEndsWith: (v1, v2) => !(v1 as string).endsWith(v2 as string),  
+  
 			equal: (v1, v2) => v1 === v2,  
 			notEqual: (v1, v2) => v1 !== v2,  
+  
 			larger: (v1, v2) => (Number(v1) || 0) > (Number(v2) || 0),  
 			largerEqual: (v1, v2) => (Number(v1) || 0) >= (Number(v2) || 0),  
 			smaller: (v1, v2) => (Number(v1) || 0) < (Number(v2) || 0),  
 			smallerEqual: (v1, v2) => (Number(v1) || 0) <= (Number(v2) || 0),  
+  
 			startsWith: (v1, v2) => (v1 as string).startsWith(v2 as string),  
 			notStartsWith: (v1, v2) => !(v1 as string).startsWith(v2 as string),  
+  
 			regex: (v1, v2) => {  
-				const match = (v2 ?? '').toString().match(new RegExp('^/(.*?)/([gimusy]*)$'));  
+				const raw = (v2 ?? '').toString();  
+				const match = raw.match(new RegExp('^/(.*?)/([dgimsuy]*)$'));  
 				let regex: RegExp;  
-				if (!match) regex = new RegExp((v2 ?? '').toString());  
-				else if (match.length === 1) regex = new RegExp(match[1]);  
-				else regex = new RegExp(match[1], match[2]);  
+				try {  
+					if (!match) regex = new RegExp(raw);  
+					else if (match.length === 1) regex = new RegExp(match[1]);  
+					else regex = new RegExp(match[1], match[2]);  
+				} catch {  
+					// Invalid pattern — treat as non-match  
+					return false;  
+				}  
 				return !!(v1 ?? '').toString().match(regex);  
 			},  
 			notRegex: (v1, v2) => {  
-				const match = (v2 ?? '').toString().match(new RegExp('^/(.*?)/([gimusy]*)$'));  
+				const raw = (v2 ?? '').toString();  
+				const match = raw.match(new RegExp('^/(.*?)/([dgimsuy]*)$'));  
 				let regex: RegExp;  
-				if (!match) regex = new RegExp((v2 ?? '').toString());  
-				else if (match.length === 1) regex = new RegExp(match[1]);  
-				else regex = new RegExp(match[1], match[2]);  
+				try {  
+					if (!match) regex = new RegExp(raw);  
+					else if (match.length === 1) regex = new RegExp(match[1]);  
+					else regex = new RegExp(match[1], match[2]);  
+				} catch {  
+					// Invalid pattern — treat as match-not-found  
+					return true;  
+				}  
 				return !(v1 ?? '').toString().match(regex);  
 			},  
 		};  
@@ -443,11 +449,12 @@ export class DynamicSwitch implements INodeType {
 			throw new NodeOperationError(this.getNode(), `Invalid DateTime value: "${String(v)}"`);  
 		};  
   
-		const ensureRange = (idx: number) => {  
+		const ensureRange = (idx: number, itemIndex?: number) => {  
 			if (!Number.isInteger(idx) || idx < 0 || idx >= outputs.length) {  
 				throw new NodeOperationError(  
 					this.getNode(),  
 					`Output index ${idx} is out of range. Must be between 0 and ${outputs.length - 1}.`,  
+					itemIndex !== undefined ? { itemIndex } : {},  
 				);  
 			}  
 		};  
@@ -464,22 +471,21 @@ export class DynamicSwitch implements INodeType {
 						const fb = this.getNodeParameter('fallbackOutput', i) as number;  
 						if (fb !== -1) {  
 							const outIdx = Math.floor(fb);  
-							ensureRange(outIdx);  
+							ensureRange(outIdx, i);  
 							outputs[outIdx].push(item);  
 						}  
 					} else {  
-						ensureRange(target);  
+						ensureRange(target, i);  
 						outputs[target].push(item);  
 					}  
 					continue;  
 				}  
   
-				// mode === 'rules'  
+				// Mode: rules  
 				const dataType = this.getNodeParameter('dataType', i) as string;  
-				const matchStrategy =  
-					(this.getNodeParameter('matchStrategy', i) as string) || 'first';  
+				const matchStrategy = (this.getNodeParameter('matchStrategy', i) as string) || 'first';  
   
-								let left: NodeParameterValue;  
+				let left: NodeParameterValue;  
 				if (dataType === 'boolean') {  
 					left = this.getNodeParameter('value1Boolean', i) as NodeParameterValue;  
 				} else if (dataType === 'dateTime') {  
@@ -489,16 +495,15 @@ export class DynamicSwitch implements INodeType {
 					left = this.getNodeParameter('value1Number', i) as NodeParameterValue;  
 				} else {  
 					left = this.getNodeParameter('value1String', i) as NodeParameterValue;  
-				}    
+				}  
   
-				// Pick the correct rules collection for the selected data type  
 				const rulesPathByType: Record<string, string> = {  
 					boolean: 'rulesBoolean.rules',  
 					dateTime: 'rulesDateTime.rules',  
 					number: 'rulesNumber.rules',  
 					string: 'rulesString.rules',  
 				};  
-				const rulesPath = rulesPathByType[dataType] || rulesPathByType.number;  
+				const rulesPath = rulesPathByType[dataType];  
 				const rules = this.getNodeParameter(rulesPath, i, []) as INodeParameters[];  
   
 				let matched = false;  
@@ -517,9 +522,9 @@ export class DynamicSwitch implements INodeType {
 						right = parseDateValue(right);  
 					}  
   
-					// Case-insensitive string comparisons (except regex)  
 					let l = left;  
 					let r = right;  
+  
 					if (dataType === 'string') {  
 						const ci = this.getNodeParameter('caseInsensitive', i, true) as boolean;  
 						const isRegex = op === 'regex' || op === 'notRegex';  
@@ -531,14 +536,16 @@ export class DynamicSwitch implements INodeType {
   
 					const fn = ops[op];  
 					if (typeof fn !== 'function') {  
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${op}`);  
+						throw new NodeOperationError(this.getNode(), `Unknown operation: ${op}`, {  
+							itemIndex: i,  
+						});  
 					}  
   
 					const ok = fn(l, r);  
   
 					if (ok) {  
 						const outIdx = Math.floor(rule.output as number);  
-						ensureRange(outIdx);  
+						ensureRange(outIdx, i);  
 						outputs[outIdx].push(item);  
 						matched = true;  
 						if (matchStrategy === 'first') break;  
@@ -549,12 +556,14 @@ export class DynamicSwitch implements INodeType {
 					const fb = this.getNodeParameter('fallbackOutput', i) as number;  
 					if (fb !== -1) {  
 						const outIdx = Math.floor(fb);  
-						ensureRange(outIdx);  
+						ensureRange(outIdx, i);  
 						outputs[outIdx].push(item);  
 					}  
 				}  
 			} catch (error) {  
 				if (this.continueOnFail()) {  
+					// route error to first output (if any)  
+					if (!outputs.length) return [[]];  
 					outputs[0].push({  
 						json: { error: (error as Error).message },  
 						pairedItem: { item: i },  
