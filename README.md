@@ -1,6 +1,6 @@
-# n8n-nodes-dynamic-switch  
-  
-This is an n8n community node. It lets you add a Dynamic Switch node to your n8n workflows to route items across multiple outputs based on expressions or rule-based comparisons.  
+# n8n-nodes-dynamic-switch
+
+This is an n8n community node that **fixes what the n8n's built-in Switch node should have been** by allowing **up to 50 dynamic outputs** instead of being limited to a fixed number of outputs. It lets you add a Dynamic Switch node to your n8n workflows to route items across multiple outputs based on expressions or rule-based comparisons—with far greater flexibility than the standard Switch node.  
   
 [n8n](https://n8n.io/) is a fair-code licensed workflow automation platform.  
   
@@ -16,12 +16,12 @@ You can also install directly from within n8n:
 - Search or enter the package name: `n8n-nodes-dynamic-switch`  
 - Install and trust the package  
   
-## Operations  
-  
-The Dynamic Switch is a transform node that routes incoming items to one or more outputs. You control the number of outputs, labels, and routing mode.  
-  
-Key parameters:  
-- Number of Outputs: how many output ports to render (1–50).  
+## Operations
+
+The Dynamic Switch is a transform node that **fixes what the n8n's built-in Switch node should have been** by allowing you to **dynamically configure 1–50 outputs** at runtime, rather than being limited to a fixed number. You control the number of outputs, labels, and routing mode with much greater flexibility.
+
+Key parameters:
+- **Number of Outputs**: Configure anywhere from 1 to 50 output ports dynamically (far exceeding the standard Switch node's limit).  
 - Output Labels: optional comma-separated labels for ports; falls back to “Route 0..N”.  
 - Mode:  
   - Expression: send an item to a zero-based output index, which can be an expression (e.g., `{{$json.routeIndex}}`).  
@@ -103,4 +103,4 @@ Example (Expression mode):
 MIT  
 
 ## Author  
-Built and maintained by Swiftwing (https://swiftwing.fr?ref=n8n-nodes-dynamic-switch)  
+Built and maintained by Swiftwing (https://swiftwing.fr)  

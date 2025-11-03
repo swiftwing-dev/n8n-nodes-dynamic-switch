@@ -14,7 +14,7 @@ export class DynamicSwitch implements INodeType {
 		name: 'dynamicSwitch',  
 		group: ['transform'],  
 		version: 1,  
-		icon: 'file:dynamic-switch-lofi.svg',  
+		icon: 'file:dynamic-switch.svg',  
 		description:  
 			'Single-node switch with dynamic outputs and efficient routing: maintained by Swiftwing.fr',  
 		defaults: { name: 'Dynamic Switch' },  
